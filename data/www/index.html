@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-language" content="de" />
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+  <title>Konfigurationsseite</title>
+  <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+  <script src="js/jsoneditor.js"></script>
+
+</head>
+
+<body>
+  <h1>Grundeinstellungen</h1>
+
+  <div id='editor_holder'></div>
+  <br>
+  <button id='submit'>Konfiguration Speichern</button>
+  <br>
+  <script>
+
+    //# sourceMappingURL=jsoneditor.js.map
+    // Initialize the editor with a JSON schema
+    JSONEditor.defaults.options.theme = 'bootstrap2';
+    JSONEditor.defaults.options.disable_edit_json = true;
+    JSONEditor.defaults.options.disable_properties = true;
+    JSONEditor.defaults.options.disable_collapse = true;
+    //JSONEditor.defaults.options.disable_array_reorder = true;
+
+    const options = {
+      mode: 'view'
+    }
+    var editor = new JSONEditor(document.getElementById('editor_holder'), {
+      schema: {
+        "title": "Konfiguration",
+        "type": "object",
+        "description": "",
+        "properties": {
+          "ssid": {
+            "type": "string",
+            "description": "SSID",
+            "minLength": 4,
+            "default": ""
+          },
+          "password": {
+            "description": "Passwort",
+            "type": "string",
+            "default": ""
+          },
+          "gateway": {
+            "description": "Gateway",
+            "type": "string",
+            "default": ""
+          },
+          "fritzbox": {
+            "description": "Fritzbox-IP",
+            "type": "string",
+            "default": ""
+          },
+          "fritzuser": {
+            "description": "Fritz-User",
+            "type": "string",
+            "default": ""
+          },
+          "fritzpass": {
+            "description": "Fritz-User-Passwort",
+            "type": "string",
+            "default": ""
+          },
+          "blocktime": {
+            "description": "Sperrzeit in Minuten",
+            "type": "number",
+            "default": 60
+          },
+          "AINs": {
+            "type": "array",
+            "format": "table",
+            "title": "Geraete",
+            "description": "verzan/verzaus=Schaltverzoerung | invert=invertieren(An/Aus tauschen) | bedan/bedaus= Bedingung (andere Steckdose muss an/aus sein) | itime=in Zeit an/aus oder aus/an",
+            "items": {
+              "type": "object",
+              "title": "Geraete",
+              "properties": {
+                "aktiv":{
+"type": "boolean",
+"format": "checkbox",
+"value": "true"
+},
+                "name": {
+                  "type": "string"
+                },
+                "urlid": {
+                  "type": "string"
+                },
+                "invert": {
+                  "description": "",
+                  "type": "string",
+                  "enum": [
+                    "AnAus",
+                    "AusAn"
+                  ]
+                },
+                "voltmin": {
+                  "description": "",
+                  "type": "number",
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "voltmax": {
+                  "description": "",
+                  "type": "number",
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "verzan": {
+                  "description": "",
+                  "type": "number",
+                  "options": {
+                    "input_width": "50px"
+                  }
+                }, "verzaus": {
+                  "description": "",
+                  "type": "number",
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "bedan": {
+                  "description": "",
+                  "type": "number",
+                  "default": 0,
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "bedaus": {
+                  "description": "",
+                  "type": "number",
+                  "default": 0,
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "an": {
+                  "description": "",
+                  "type": "string",
+                  "default": "00\:00",
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "aus": {
+                  "description": "",
+                  "type": "string",
+                  "default": "00\:00",
+                  "options": {
+                    "input_width": "50px"
+                  }
+                },
+                "itime": {
+                  "description": "",
+                  "type": "string",
+                  "enum": [
+                    "AnAus",
+                    "AusAn"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    var xmlhttp = new XMLHttpRequest();
+    var url = "/getconfig";
+
+    xmlhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        console.log("getparse")
+        console.log(this.responseText);
+        var myArr;
+        try {
+          myArr = JSON.parse(this.responseText);
+        } catch (e) {
+          alert("Bitte gerät neu starten und Seite neu laden");
+        }
+
+        editor.setValue(myArr);
+      }
+    };
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+
+    document.getElementById('submit').addEventListener('click', function () {
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", "/postconfig");
+      xhr.setRequestHeader("Accept", "application/json");
+      xhr.setRequestHeader("Content-Type", "application/json");
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            alert("Daten gespeichert!")
+            console.log(editor.getValue());
+          }
+        }
+      };
+
+      let data = editor.getValue();
+      var tempdata = JSON.stringify(data);
+      xhr.send(tempdata);
+    });
+
+
+  </script>
+</body>
+
+</html>
