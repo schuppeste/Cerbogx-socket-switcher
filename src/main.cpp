@@ -7,6 +7,8 @@
 #include "AsyncJson.h"
 #include "SPIFFS.h"
 #include <ArduinoJson.h>
+#include <ESPmDNS.h>
+
 
 bool SerialDebug = true;
 void synchroniseWith_NTP_Time();
@@ -141,6 +143,7 @@ void setup()
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
+  //bool formatted = SPIFFS.format();
   loadConfig();
   syncConfig();
 
@@ -197,11 +200,13 @@ void setup()
       Serial.println(info.wifi_sta_disconnected.reason);
       WiFi.disconnect();
       WiFiConnected = false;
-      WiFi.begin(ssid, pass); },
+      WiFi.begin(ssid, pass);
+      MDNS.begin("switcher.fritz.box"); },
     ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
   if (config["ssid"].as<String>() != "")
   {
     WiFi.begin(ssid, pass);
+    MDNS.begin("switcher.fritz.box");
   }
   else
     WiFi.softAP(ssidap, passap);
@@ -260,7 +265,7 @@ void loop()
       Serial.print("reading registers\n");
     for (uint8_t i = 0; i < numbermodbusRegisters; ++i)
     {
-      uint16_t packetId = cerbogx.readHoldingRegisters(modbusRegisters[i].serverid, modbusRegisters[i].address, modbusRegisters[i].length);
+      uint16_t packetId = cerbogx.readHoldingRegisters( modbusRegisters[i].address, modbusRegisters[i].length); //modbusRegisters[i].serverid,
       if (packetId > 0)
       {
         modbusRegisters[i].packetId = packetId;
@@ -379,7 +384,7 @@ int switchoff(String ain)
 void serverpathes()
 {
 
-  server.on("/index.html", HTTP_GET, [](AsyncWebServerRequest* request)
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest* request)
     {
       AsyncWebServerResponse* response = request->beginResponse(200, "text/html", "Ok");
       request->send(SPIFFS, "/www/index.html", "text/html"); });
