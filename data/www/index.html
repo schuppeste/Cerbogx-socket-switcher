@@ -25,6 +25,7 @@
     JSONEditor.defaults.options.disable_edit_json = true;
     JSONEditor.defaults.options.disable_properties = true;
     JSONEditor.defaults.options.disable_collapse = true;
+
     //JSONEditor.defaults.options.disable_array_reorder = true;
 
     const options = {
@@ -43,7 +44,7 @@
             "default": ""
           },
           "password": {
-            "description": "Passwort",
+            "description": "Password",
             "type": "string",
             "default": ""
           },
@@ -63,25 +64,25 @@
             "default": ""
           },
           "fritzpass": {
-            "description": "Fritz-User-Passwort",
+            "description": "Fritz-User-Password",
             "type": "string",
             "default": ""
           },
           "blocktime": {
-            "description": "Sperrzeit in Minuten",
+            "description": "Block Time in Minutes",
             "type": "number",
             "default": 60
           },
-          "AINs": {
+          "device_item": {
             "type": "array",
             "format": "table",
             "title": "Geraete",
-            "description": "verzan/verzaus=Schaltverzoerung | invert=invertieren(An/Aus tauschen) | bedan/bedaus= Bedingung (andere Steckdose muss an/aus sein) | itime=in Zeit an/aus oder aus/an",
+            "description": "delon/deloff=Change State Delay | invert=invert (On/Off toggle) | depon/depoff= Depending on (id of other Entry) | itime= in or not between Time",
             "items": {
               "type": "object",
               "title": "Geraete",
               "properties": {
-                "aktiv":{
+                "active":{
 "type": "boolean",
 "format": "checkbox",
 "value": "true"
@@ -96,8 +97,8 @@
                   "description": "",
                   "type": "string",
                   "enum": [
-                    "AnAus",
-                    "AusAn"
+                    "OnOff",
+                    "OffOn"
                   ]
                 },
                 "voltmin": {
@@ -114,20 +115,20 @@
                     "input_width": "50px"
                   }
                 },
-                "verzan": {
+                "delon": {
                   "description": "",
                   "type": "number",
                   "options": {
                     "input_width": "50px"
                   }
-                }, "verzaus": {
+                }, "deloff": {
                   "description": "",
                   "type": "number",
                   "options": {
                     "input_width": "50px"
                   }
                 },
-                "bedan": {
+                "depon": {
                   "description": "",
                   "type": "number",
                   "default": 0,
@@ -135,7 +136,7 @@
                     "input_width": "50px"
                   }
                 },
-                "bedaus": {
+                "depoff": {
                   "description": "",
                   "type": "number",
                   "default": 0,
@@ -143,7 +144,7 @@
                     "input_width": "50px"
                   }
                 },
-                "an": {
+                "on": {
                   "description": "",
                   "type": "string",
                   "default": "00\:00",
@@ -151,7 +152,7 @@
                     "input_width": "50px"
                   }
                 },
-                "aus": {
+                "off": {
                   "description": "",
                   "type": "string",
                   "default": "00\:00",
@@ -163,8 +164,8 @@
                   "description": "",
                   "type": "string",
                   "enum": [
-                    "AnAus",
-                    "AusAn"
+                    "OnOff",
+                    "OffOn"
                   ]
                 }
               }
@@ -184,7 +185,10 @@
         try {
           myArr = JSON.parse(this.responseText);
         } catch (e) {
-          alert("Bitte gerät neu starten und Seite neu laden");
+          const button = document.getElementById("submit");
+          button.disabled = true;
+          alert("Please restart your device, to view changed config");
+          
         }
 
         editor.setValue(myArr);

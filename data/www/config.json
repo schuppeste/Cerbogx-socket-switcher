@@ -1,1 +1,1 @@
-{"ssid":"","password":"","gateway":"","fritzbox":"","fritzuser":"","fritzpass":"","blocktime":10,"AINs":[{"aktiv":true,"name":"","urlid":"","invert":"AnAus","voltmin":22,"voltmax":27,"verzan":0,"verzaus":0,"bedan":0,"bedaus":0,"an":"08:00","aus":"16:00","itime":"AnAus"}]}
+{"ssid":"","password":"","gateway":"","fritzbox":"","fritzuser":"","fritzpass":"","blocktime":10,"device_item":[{"active":true,"name":"","urlid":"","invert":"OnOff","voltmin":22,"voltmax":27,"delon":0,"deloff":0,"depon":0,"depoff":0,"on":"08:00","off":"16:00","itime":"OnOff"}]}
