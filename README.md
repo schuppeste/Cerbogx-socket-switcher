@@ -10,11 +10,11 @@ Configuration:
 Active: Enable or Disable Device  
 Min: Voltage to switch off Switch (Hystherese)  
 Max: Voltage to switch on Switch (Hystherese)  
-Invert: OnOff: switch off at max Voltage, Switch on at min Voltage... OffON switch Off at min Voltage, switch on at max Voltage  
+Invert: OnOff: switch off at max Voltage, Switch on at min Voltage... OffOn switch, Off at min Voltage, switch on at max Voltage  
 delon: On Delay in Minutes  
 deloff: Off Delay in Minutes
-depon: Depency On  (id (Pos Number in List)0-9) Change state only if Device Id is on
-depoff: Depency Off  (id (Pos Number in List)) Change state only if Device Id is off
+depon: Needed On  (id (Pos Number in List)0-9) Change state only if Device Id is on
+depoff: Needed Off  (id (Pos Number in List)) Change state only if Device Id is off
 ontime: switch on Time  
 offtime: switch off Time  
 itime: change on/off in Between or not Between 
