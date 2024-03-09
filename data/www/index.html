@@ -4,19 +4,20 @@
 <head>
   <meta http-equiv="content-language" content="de" />
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
-  <title>Konfigurationsseite</title>
+  <title>Main Configuration</title>
   <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
   <script src="js/jsoneditor.js"></script>
 
 </head>
 
 <body>
-  <h1>Grundeinstellungen</h1>
+  <h1>Basic Settings</h1>
 
   <div id='editor_holder'></div>
-  <br>
-  <button id='submit'>Konfiguration Speichern</button>
-  <br>
+</br>
+  <button id='submit'>Save Config</button>
+</br>
+</br>
   <script>
 
     //# sourceMappingURL=jsoneditor.js.map
@@ -33,7 +34,7 @@
     }
     var editor = new JSONEditor(document.getElementById('editor_holder'), {
       schema: {
-        "title": "Konfiguration",
+        "title": "Settings",
         "type": "object",
         "description": "",
         "properties": {
@@ -76,11 +77,11 @@
           "device_item": {
             "type": "array",
             "format": "table",
-            "title": "Geraete",
-            "description": "delon/deloff=Change State Delay | invert=invert (On/Off toggle) | depon/depoff= Depending on (id of other Entry) | itime= in or not between Time",
+            "title": "Device List",
+            "description": "delon/deloff=Change Delay | invert=invert (On/Off toggle) | depon/depoff= Depending on other Entry is On/Off(Cascade) | itime= in or not between Time",
             "items": {
               "type": "object",
-              "title": "Geraete",
+              "title": "Device List",
               "properties": {
                 "active":{
 "type": "boolean",
@@ -187,7 +188,7 @@
         } catch (e) {
           const button = document.getElementById("submit");
           button.disabled = true;
-          alert("Please restart your device, to view changed config");
+          alert("Please restart your device, no access");
           
         }
 
@@ -206,7 +207,7 @@
       xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
           if (xhr.readyState == 4 && xhr.status == 200) {
-            alert("Daten gespeichert!")
+            alert("Data Saved!")
             console.log(editor.getValue());
           }
         }
