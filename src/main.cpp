@@ -131,7 +131,7 @@ struct ains device_list[10];
 modbusData modbusRegisters[] = {
     "batteryvoltage", 840, 1, UFIX0, 0, 100 // Voltage
 };
-uint8_t numbermodbusRegisters = sizeof(modbusRegisters) / sizeof(modbusRegisters[0]);
+uint8_t numbermodbusRegisters = 1;//sizeof(modbusRegisters) / sizeof(modbusRegisters[0]);
 uint8_t currentmodbusRegister = 0;
 FritzApi fritz(fritz_user.c_str(), fritz_password.c_str(), fritz_ip.c_str());
 
@@ -153,7 +153,7 @@ void setup()
 
   cerbogx.onData([](uint16_t packet, uint8_t slave, MBFunctionCode fc, uint8_t* data, uint16_t len)
     {
-      for (uint8_t i = 0; i < numbermodbusRegisters; ++i) {
+      for (uint8_t i = 0; i < numbermodbusRegisters; i++) {
         if (modbusRegisters[i].packetId == packet) {
           modbusRegisters[i].packetId = 0;
           uint32_t value = 0;
