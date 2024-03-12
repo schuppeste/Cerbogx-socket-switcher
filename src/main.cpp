@@ -43,7 +43,7 @@ void notFound(AsyncWebServerRequest* request)
 time_t nowsync; 
 tm myTimeInfo; 
 
-int ainiescount = 0;
+int device_listcount = 0;
 void serverpathes();
 unsigned long lastupdate = 0;
 unsigned lastblock = 0;
@@ -64,7 +64,7 @@ String fritz_user = "";
 String fritz_password = "";
 String fritz_ip = ""; 
 String fritz_ain = "";
-String AINs[10] = { "", "", "", "", "", "", "", "", "", "" };
+String device_item[10] = { "", "", "", "", "", "", "", "", "", "" };
 String switchoffact = "";
 String switchonact = "";
 unsigned long lastMillisTime = 0;
@@ -102,31 +102,31 @@ struct modbusData
 };
 struct ains
 {
-  bool aktiv = true;
+  bool active = true;
   String id;
   String name;
   double voltmin;
   double voltmax;
-  int verzan;
-  int verzaus;
+  int delon;
+  int deloff;
   bool invert;
   int order;
-  int bedan;
-  int bedaus;
-  int stunden;
-  int minuten;
+  int depon;
+  int depoff;
+  int hour;
+  int minute;
   unsigned long lastblock = 0;
   int blocked = 0;
   bool firevent = false;
-  String an;
-  String aus;
+  String on;
+  String off;
   int laststatus = 0;
   int status = 0;
   int itime;
   int dummy = 0;
 };
 
-struct ains ainies[10];
+struct ains device_list[10];
 
 modbusData modbusRegisters[] = {
     "batteryvoltage", 840, 1, UFIX0, 0, 100 // Voltage
@@ -224,9 +224,9 @@ void setup()
 
   configTzTime(TIME_ZONE, NTP_SERVER_POOL);
   int cnt = 0;
-  while (cnt < ainiescount)
+  while (cnt < device_listcount)
   {
-    switchoff(ainies[cnt].id);
+    switchoff(device_list[cnt].id);
     cnt++;
     delay(100);
   }
@@ -274,49 +274,50 @@ void loop()
       {
         if (SerialDebug)
           Serial.print("reading error\n");
+
       }
     }
-Serial.println(lastvoltage);
+    if (SerialDebug)
+      Serial.println(lastvoltage);
     int cnt = 0;
     if (lastupdate != 0) // VoltageUpdate?
-      while (cnt < ainiescount)
+      while (cnt < device_listcount)
       {
-        if (ainies[cnt].aktiv)
-          if (check(cnt))
+        if (device_list[cnt].active) //Check active before check Configuration Entrys
+          if (check(cnt)) //All Checks Positive? (Depency, Voltage and condition)
           {
-            if (ainies[cnt].status == false)
+            if (device_list[cnt].status == false) //Check latest status
             {
-              if (ainies[cnt].blocked == 0)
+              if (device_list[cnt].blocked == 0) //Check for cleared block 
               {
-                ainies[cnt].blocked = 1;
-                ainies[cnt].lastblock = millis();
+                device_list[cnt].blocked = 1; //Set only to one to activate blocking 
+                device_list[cnt].lastblock = millis();
               }
-              else if (ainies[cnt].status == false && ainies[cnt].blocked == 2)
+              else if (device_list[cnt].status == false && device_list[cnt].blocked == 2) 
               {
-
-                if (switchon(ainies[cnt].id) == 1)
+                if (switchon(device_list[cnt].id) == 1)
                 {
-                  ainies[cnt].status = true;
-                  ainies[cnt].blocked = 0;
+                  device_list[cnt].status = true;
+                  device_list[cnt].blocked = 0;
                 }
               }
             }
           }
           else
           {
-            if (ainies[cnt].status == true)
+            if (device_list[cnt].status == true)
             {
-              if (ainies[cnt].blocked == 0)
+              if (device_list[cnt].blocked == 0)
               {
-                ainies[cnt].blocked = 3;
-                ainies[cnt].lastblock = millis();
+                device_list[cnt].blocked = 3;
+                device_list[cnt].lastblock = millis();
               }
-              else if (ainies[cnt].status == true && ainies[cnt].blocked == 4)
+              else if (device_list[cnt].status == true && device_list[cnt].blocked == 4)
               {
-                if (switchoff(ainies[cnt].id) == 0)
+                if (switchoff(device_list[cnt].id) == 0)
                 {
-                  ainies[cnt].status = false;
-                  ainies[cnt].blocked = 0;
+                  device_list[cnt].status = false;
+                  device_list[cnt].blocked = 0;
                 }
               }
             }
@@ -476,32 +477,32 @@ void syncConfig()
   blocktime = config["blocktime"].as<int>();
   int z = 0;
 
-  while (!config["AINs"].as<JsonArray>().operator[](z).isNull())
+  while (!config["device_item"].as<JsonArray>().operator[](z).isNull())
   {
-    ainies[z].aktiv = config["AINs"].operator[](z)["aktiv"].as<bool>();
-    ainies[z].name = config["AINs"].operator[](z)["name"].as<String>();
-    ainies[z].id = config["AINs"].operator[](z)["urlid"].as<String>();
-    ainies[z].voltmin = config["AINs"].operator[](z)["voltmin"].as<double>();
-    ainies[z].voltmax = config["AINs"].operator[](z)["voltmax"].as<double>();
-    if (config["AINs"].operator[](z)["invert"].as<String>() == "AnAus")
-      ainies[z].invert = true;
+    device_list[z].active = config["device_item"].operator[](z)["active"].as<bool>();
+    device_list[z].name = config["device_item"].operator[](z)["name"].as<String>();
+    device_list[z].id = config["device_item"].operator[](z)["urlid"].as<String>();
+    device_list[z].voltmin = config["device_item"].operator[](z)["voltmin"].as<double>();
+    device_list[z].voltmax = config["device_item"].operator[](z)["voltmax"].as<double>();
+    if (config["device_item"].operator[](z)["invert"].as<String>() == "OffOn")
+      device_list[z].invert = true;
     else
-      ainies[z].invert = false;
-    ainies[z].verzan = config["AINs"].operator[](z)["verzan"].as<int>();
-    ainies[z].verzaus = config["AINs"].operator[](z)["verzaus"].as<int>();
-    if (config["AINs"].operator[](z)["itime"].as<String>() == "AnAus")
-      ainies[z].itime = true;
+      device_list[z].invert = false;
+    device_list[z].delon = config["device_item"].operator[](z)["delon"].as<int>();
+    device_list[z].deloff = config["device_item"].operator[](z)["deloff"].as<int>();
+    if (config["device_item"].operator[](z)["itime"].as<String>() == "OnOff")
+      device_list[z].itime = true;
     else
-      ainies[z].itime = false;
-    ainies[z].bedan = config["AINs"].operator[](z)["bedan"].as<int>();
-    ainies[z].bedaus = config["AINs"].operator[](z)["bedaus"].as<int>();
-    ainies[z].an = config["AINs"].operator[](z)["an"].as<String>();
-    ainies[z].aus = config["AINs"].operator[](z)["aus"].as<String>();
-    ainies[z].dummy = 1;
+      device_list[z].itime = false;
+    device_list[z].depon = config["device_item"].operator[](z)["depon"].as<int>();
+    device_list[z].depoff = config["device_item"].operator[](z)["depoff"].as<int>();
+    device_list[z].on = config["device_item"].operator[](z)["on"].as<String>();
+    device_list[z].off = config["device_item"].operator[](z)["off"].as<String>();
+    device_list[z].dummy = 1;
 
     z++;
   }
-  ainiescount = z;
+  device_listcount = z;
 }
 bool check(int checkid)
 {
@@ -513,11 +514,11 @@ bool check(int checkid)
   
   String mynow = String(now);
   String zero = "";
-  if (ainies[checkid].itime)
+  if (device_list[checkid].itime)
   {
-    if (!(ainies[checkid].an == "00:00" && ainies[checkid].aus == "00:00"))
+    if (!(device_list[checkid].on == "00:00" && device_list[checkid].off == "00:00"))
     {
-      if (isBetween(mynow, ainies[checkid].an, ainies[checkid].aus))
+      if (isBetween(mynow, device_list[checkid].on, device_list[checkid].off))
       {
         timecheck = 2;
       }
@@ -527,9 +528,9 @@ bool check(int checkid)
   }
   else
   {
-    if (!(ainies[checkid].an == "00:00" && ainies[checkid].aus == "00:00"))
+    if (!(device_list[checkid].on == "00:00" && device_list[checkid].off == "00:00"))
     {
-      if (!isBetween(mynow, ainies[checkid].an, ainies[checkid].aus))
+      if (!isBetween(mynow, device_list[checkid].on, device_list[checkid].off))
       {
         timecheck = 2;
       }
@@ -537,52 +538,52 @@ bool check(int checkid)
         timecheck = 1;
     }
   }
-  if ((ainies[checkid].an == "00:00" && ainies[checkid].aus == "00:00"))
+  if ((device_list[checkid].on == "00:00" && device_list[checkid].off == "00:00"))
     timecheck = 3;
 
   // voltage check
-  if (ainies[checkid].voltmin == 0 && ainies[checkid].voltmax == 0)
+  if (device_list[checkid].voltmin == 0 && device_list[checkid].voltmax == 0)
     voltagecheck = 3;
-  else if (!ainies[checkid].invert)
+  else if (!device_list[checkid].invert)
   {
 
-    if (lastvoltage <= ainies[checkid].voltmin && ainies[checkid].firevent == false)
+    if (lastvoltage <= device_list[checkid].voltmin && device_list[checkid].firevent == false)
     {
       voltagecheck = 1;
-      ainies[checkid].firevent = true;
+      device_list[checkid].firevent = true;
     }
-    else if (lastvoltage <= ainies[checkid].voltmax && ainies[checkid].firevent == true)
+    else if (lastvoltage <= device_list[checkid].voltmax && device_list[checkid].firevent == true)
       voltagecheck = 1;
 
     else
-      ainies[checkid].firevent = false;
+      device_list[checkid].firevent = false;
   }
   else
   {
-    if (lastvoltage >= ainies[checkid].voltmin && ainies[checkid].firevent == false)
+    if (lastvoltage >= device_list[checkid].voltmin && device_list[checkid].firevent == false)
     {
       voltagecheck = 1;
     }
     else
     {
-      if (!ainies[checkid].firevent)
-        ainies[checkid].firevent = true;
-      if (lastvoltage >= ainies[checkid].voltmax)
-        ainies[checkid].firevent = false;
+      if (!device_list[checkid].firevent)
+        device_list[checkid].firevent = true;
+      if (lastvoltage >= device_list[checkid].voltmax)
+        device_list[checkid].firevent = false;
     }
   }
 
-  if (ainies[checkid].voltmin == 0 && ainies[checkid].voltmax == 0)
+  if (device_list[checkid].voltmin == 0 && device_list[checkid].voltmax == 0)
     voltagecheck = 3;
 
   // Depencycheck
-  if (ainies[checkid].bedaus != 0 || ainies[checkid].bedan != 0)
+  if (device_list[checkid].depoff != 0 || device_list[checkid].depon != 0)
   {
-    if (ainies[checkid].bedan != 0)
-      if (ainies[ainies[checkid].bedan - 1].status == 1)
+    if (device_list[checkid].depon != 0)
+      if (device_list[device_list[checkid].depon - 1].status == 1)
         depencycheck = 1;
-    if (ainies[checkid].bedaus != 0)
-      if (ainies[ainies[checkid].bedaus - 1].status == 0)
+    if (device_list[checkid].depoff != 0)
+      if (device_list[device_list[checkid].depoff - 1].status == 0)
         depencycheck = 1;
   }
   else
@@ -621,18 +622,18 @@ bool isBetween(
 void removeblock()
 {
   int cntblocked = 0;
-  while (cntblocked < ainiescount)
+  while (cntblocked < device_listcount)
   {
-    if (ainies[cntblocked].blocked == 1 || ainies[cntblocked].blocked == 3)
+    if (device_list[cntblocked].blocked == 1 || device_list[cntblocked].blocked == 3)
     {
-      if (millis() - ainies[cntblocked].lastblock > (60000UL * ainies[cntblocked].verzan) && ainies[cntblocked].blocked == 1)
+      if (millis() - device_list[cntblocked].lastblock > (60000UL * device_list[cntblocked].delon) && device_list[cntblocked].blocked == 1)
       {
-        ainies[cntblocked].blocked = 2;
+        device_list[cntblocked].blocked = 2;
       }
 
-      if (millis() - ainies[cntblocked].lastblock > (60000UL * ainies[cntblocked].verzaus) && ainies[cntblocked].blocked == 3)
+      if (millis() - device_list[cntblocked].lastblock > (60000UL * device_list[cntblocked].deloff) && device_list[cntblocked].blocked == 3)
       {
-        ainies[cntblocked].blocked = 4;
+        device_list[cntblocked].blocked = 4;
       }
     }
     cntblocked++;
